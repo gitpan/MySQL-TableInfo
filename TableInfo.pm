@@ -3,7 +3,7 @@ package MySQL::TableInfo;
 use strict;
 use Carp;
 
-our $VERSION = '1.0';
+our $VERSION = '1.01';
 
 ####
 # takes care of plural forms of methods and 'get_' prefix
@@ -312,10 +312,9 @@ __END__
 
 MySQL::TableInfo - Perl extension for getting access into mysql's column information.
 
-
 =head1 RATIONALE
 
-The idea was taken from Paul DeBois' "MySQL and Perl for the Web". I searched the CPAN
+The idea was taken from Paul DuBois' "MySQL and Perl for the Web" book. I searched the CPAN
 but failed to find any module that does the similar task and thought of putting one
 together and upload to CPAN. And  here it is.
 
@@ -325,24 +324,23 @@ The library has been tested on MySQL version 3.23.40
 
 =head1 SYNOPSIS
 
+    use CGI;
     use DBI;
     use MySQL::TableInfo;
 
-    my $dbh = DBI->connect("dbi:mysql:sherzodr", "sherzodr", "tewizu6");
-    my $table = new MySQL::TableInfo($dbh, "messages");
+    my $CGI = new CGI:
+    my $dbh = DBI->connect(....);
+    my $table = new MySQL::TableInfo($dbh, "bio");
 
-    print "Columns off the messages table:\n";
-
-    foreach my $col ($table->column) {
-        print "$col\n";
-
-        print "\tDefault => ", $table->default($col), "\n";
-        print "\tType => ", $table->type($col), "\n";
-        if ($table->type($col) =~ /set|enum/) {
-            print "\tValid values=> ", $table->set($col), "\n";
-        }
-    }
-
+    print $CGI->header,
+        $CGI->start_html("MySQL::TableInfo"),
+        $CGI->start_form,
+        $CGI->div("Do you have beard?"),
+        $CGI->popup_menu(-name=>'has_beard',
+                         -values=>[$table->enum('has_beard')],
+                         -default=>$table->default('has_beard')),
+    $CGI->end_form,
+    $CGI->end_html;
 
 
 =head1 DESCRIPTION
@@ -362,7 +360,7 @@ troubles. Consider the following code:
 
     use CGI;
     use DBI;
-    my MySQL::TableInfo;
+    use MySQL::TableInfo;
 
     my $CGI = new CGI:
     my $dbh = DBI->connect(....);
@@ -372,9 +370,9 @@ troubles. Consider the following code:
 
     print $CGI->start_form,
         $CGI->div("Do you wear beard?"),
-        $CGI->popup_menu(-name=>'has_beard',
-                         -values=>[$table->set('has_beard')],
-                         -default=>$table->default('has_beard')),
+        $CGI->checkbox_group( -name=>'has_beard',
+                              -values=>[$table->set('has_beard')],
+                              -default=>$table->default('has_beard')),
     $CGI->end_form;
 
     print $CGI->end_html;
@@ -394,7 +392,7 @@ constructor method. The two reguired arguments are database handle ($dbh) return
 
 =item C<column([$column_name])>
 
-if invoked with a column name returns an array cosisting of all the column's attributes. If the argument is missing returns an array consisting table's all the columns. For example, the following code prints all the column names:
+if invoked with a column name returns an array consisting of all the column's attributes. If the argument is missing returns an array consisting table's all the columns. For example, the following code prints all the column names:
 
     foreach my $col ($table->column) {
         print "$col\n";
@@ -460,6 +458,6 @@ No bugs have been detected thus far. Any bug reports should be sent to Sherzod R
 
 =head1 SEE ALSO
 
-L<DBI>.
+L<DBI> L<DBD::mysql> L<CGI>
 
 =cut
