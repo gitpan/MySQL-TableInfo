@@ -1,10 +1,9 @@
 package MySQL::TableInfo;
 
-use 5.006;
 use strict;
 use Carp;
 
-our $VERSION = '0.03';
+our $VERSION = '1.0';
 
 ####
 # takes care of plural forms of methods and 'get_' prefix
@@ -314,6 +313,15 @@ __END__
 MySQL::TableInfo - Perl extension for getting access into mysql's column information.
 
 
+=head1 RATIONALE
+
+The idea was taken from Paul DeBois' "MySQL and Perl for the Web". I searched the CPAN
+but failed to find any module that does the similar task and thought of putting one
+together and upload to CPAN. And  here it is.
+
+=head1 NOTE
+
+The library has been tested on MySQL version 3.23.40
 
 =head1 SYNOPSIS
 
@@ -323,18 +331,18 @@ MySQL::TableInfo - Perl extension for getting access into mysql's column informa
     my $dbh = DBI->connect("dbi:mysql:sherzodr", "sherzodr", "tewizu6");
     my $table = new MySQL::TableInfo($dbh, "messages");
 
-	print "Columns off the messages table:\n";
+    print "Columns off the messages table:\n";
 
-	foreach my $col ($table->column) {
-		print "$col\n";
+    foreach my $col ($table->column) {
+        print "$col\n";
 
-		print "\tDefault => ", $table->default($col), "\n";
-		print "\tType => ", $table->type($col), "\n";
-		if ($table->type($col) =~ /set|enum/) {
-			print "\tValid values=> ", $table->set($col), "\n";
-		}
-	}
-    
+        print "\tDefault => ", $table->default($col), "\n";
+        print "\tType => ", $table->type($col), "\n";
+        if ($table->type($col) =~ /set|enum/) {
+            print "\tValid values=> ", $table->set($col), "\n";
+        }
+    }
+
 
 
 =head1 DESCRIPTION
@@ -345,47 +353,44 @@ which is available via
     DESCRIBE table_name, SHOW COLUMNS FROM table_name
 
 queries. It's also handy for constructing form based CGI applications to control HTML forms'
-attributes such as C<VALUE>, C<SIZE>, C<MAXLENGTH>, C<TYPE> and so forth. 
+attributes such as C<VALUE>, C<SIZE>, C<MAXLENGTH>, C<TYPE> and so forth.
 For example, if you have a ENUM('Yes', 'No') column in your mysql table, then you normally
 would present it either as a group of radio buttons, or as a <SELECT> menu. If you modify
-the column, and add one more option, ENUM('Yes', 'No', 'N/A'), then you will have to 
-re-write your html code accordingly. By using MySQL::TableInfo, you can avoide this double 
+the column, and add one more option, ENUM('Yes', 'No', 'N/A'), then you will have to
+re-write your html code accordingly. By using MySQL::TableInfo, you can avoide this double
 troubles. Consider the following code:
 
-	use CGI;
-	use DBI;
-	my MySQL::TableInfo;
+    use CGI;
+    use DBI;
+    my MySQL::TableInfo;
 
-	my $CGI = new CGI:
-	my $dbh = DBI->connect(....);
-	my $table = new MySQL::TableInfo($dbh, "bio");
+    my $CGI = new CGI:
+    my $dbh = DBI->connect(....);
+    my $table = new MySQL::TableInfo($dbh, "bio");
 
-	print $CGI->header, $CGI->start_html("MySQL::TableInfo");
+    print $CGI->header, $CGI->start_html("MySQL::TableInfo");
 
-	print $CGI->start_form,
-		$CGI->div("Do you wear beard?"),
-		$CGI->popup_menu(-name=>'has_beard', 
-						 -values=>[$table->set('beard')],
-						 -default=>$table->default('beard')),
-	$CGI->end_form;
+    print $CGI->start_form,
+        $CGI->div("Do you wear beard?"),
+        $CGI->popup_menu(-name=>'has_beard',
+                         -values=>[$table->set('has_beard')],
+                         -default=>$table->default('has_beard')),
+    $CGI->end_form;
 
-	print $CGI->end_html;
+    print $CGI->end_html;
 
-As you see, modifying 'beard' column, which is an enumeration column, whould
-reflect in your CGI too.	
+As you see, modifying 'has_beard' column, which is an enumeration column, whould
+reflect in your CGI too.
 
 =head1 METHODS
 
 =over 4
-
 
 =item C<new($dbh, 'table_name')>
 
 constructor method. The two reguired arguments are database handle ($dbh) returned from DBI->connect(), and the name of the mysql table to work with. Since you create the $dbh with the database name, it is not required to pass the database name to C<new()>. If you really want to, you can prescribe the database name in front of the "table_name" delimited with a period. Example:
 
     my $table = new MySQL::TableInfo($dbh, "database.table_name");
-
-
 
 =item C<column([$column_name])>
 
@@ -401,18 +406,15 @@ You can also print all the column names together with their attributes by slight
         print "$col => ", join (" : ", $table->column($col) ), "\n";
     }
 
-Of course the above example is pretty awkward if we want to gain access to each attribute of the columns (like size, default values, sets, enumeations and etc) seperately
-
+Of course the above example is pretty awkward if we want to gain access to each attribute of the columns (like size, default values, sets, enumeations and etc) seperately. But the cure is comming below, read on
 
 =item C<size($column_name)>
 
 returns the size of the $column_name. If the column doesn't have any size attribute (such as TEXT?) it returns I<undef>
 
-
 =item C<type($column_name)>
 
 returns the type of the column. The possible values returned from this method include: I<varchar>, I<char>, I<text>, I<int>, I<set>, I<enum> and so forth.
-
 
 =item C<default($column_name)>
 
@@ -440,7 +442,7 @@ loads defaults of the columns into the CGI.pm object. It is usefull if you are m
 
 =item C<validate($CGI)>
 
-validates matching the value(s) of the paramaters with their respective columns (if exists) off the mysql table. This feature is not implemented as of MySQL::TableInfo version 0.03. Any modifications are welcome. 
+validates matching the value(s) of the paramaters with their respective columns (if exists) off the mysql table. This feature is not implemented as of MySQL::TableInfo version 0.03. Any modifications are welcome.
 
 =back
 
